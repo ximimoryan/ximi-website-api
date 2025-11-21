@@ -1,0 +1,16 @@
+{
+  "compatibility_date": "2025-10-08",
+  "main": "src/index.ts",
+  "name": "ximi-website-api",
+  "upload_source_maps": true,
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vitepress-analytics",
+      "database_id": "e26d459f-cc63-44c1-ae08-9889b6b80aa6"
+    }
+  ]
+}
