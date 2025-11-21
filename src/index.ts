@@ -1,11 +1,22 @@
 import { ApiException, fromHono } from "chanfana";
 import { Hono } from "hono";
-import { tasksRouter } from "./endpoints/tasks/router";
 import { ContentfulStatusCode } from "hono/utils/http-status";
-import { DummyEndpoint } from "./endpoints/dummyEndpoint";
+import { analyticsRouter } from "./endpoints/analytics/router";
+import { AutoAnalyticsMiddleware } from "./endpoints/analytics/middleware";
 
 // Start a Hono app
 const app = new Hono<{ Bindings: Env }>();
+
+// 创建自动埋点中间件实例
+const autoAnalytics = new AutoAnalyticsMiddleware();
+
+// 添加自动埋点中间件
+app.use('*', async (c, next) => {
+  const startTime = Date.now();
+  await next();
+  // 在响应发送后记录分析数据
+  c.executionCtx.waitUntil(autoAnalytics.trackRequest(c, startTime));
+});
 
 app.onError((err, c) => {
   if (err instanceof ApiException) {
@@ -40,11 +51,8 @@ const openapi = fromHono(app, {
   },
 });
 
-// Register Tasks Sub router
-openapi.route("/tasks", tasksRouter);
-
-// Register other endpoints
-openapi.post("/dummy/:slug", DummyEndpoint);
+// Register Analytics Sub router (只保留数据上报接口)
+openapi.route("/analytics", analyticsRouter);
 
 // Export the Hono app
 export default app;
